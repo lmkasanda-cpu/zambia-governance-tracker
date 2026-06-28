@@ -774,6 +774,22 @@ footer::before {
   text-transform: uppercase;
 }
 
+/* ── Verified data badge ── */
+.verified-badge {
+  display: inline-block;
+  font-family: var(--font-data);
+  font-size: 0.58rem;
+  color: var(--green-lt);
+  background: rgba(18,165,90,0.08);
+  border: 1px solid rgba(18,165,90,0.25);
+  border-radius: 2px;
+  padding: 1px 5px;
+  margin-top: 0.4rem;
+  letter-spacing: 0.05em;
+  cursor: help;
+  align-self: flex-start;
+}
+
 /* ── Chart annotation note ── */
 .chart-note {
   font-family: var(--font-data);

@@ -19,7 +19,9 @@
       "Bash(git --version)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(/opt/homebrew/bin/pdftotext /Users/lombemichaelkasanda/Downloads/CurrentFuelPumpPrices.pdf -)",
+      "Bash(/usr/local/bin/pdftotext /Users/lombemichaelkasanda/Downloads/CurrentFuelPumpPrices.pdf -)"
     ]
   }
 }

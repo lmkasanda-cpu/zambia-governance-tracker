@@ -2,11 +2,44 @@
 
 /* ═══════════════════════════════════════════════
    ZAMBIA GOVERNANCE TRACKER — app.js
-   Data sources: World Bank, Open Exchange Rates,
+   Data sources: World Bank · Open Exchange Rates
+   Bank of Zambia · PwC Mining 2025 · PBO 2025
    AllOrigins CORS proxy for RSS feeds
 ═══════════════════════════════════════════════ */
 
 const PROXY = url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
+// ── Static data verification registry ────────
+// Dates when official sources were last checked.
+// Update this when you refresh hardcoded numbers.
+const VERIFIED = {
+  'copper-prod':      { date: '2025-12-01', src: 'PwC Zambia Mining Report 2025' },
+  'copper-price':     { date: '2025-12-01', src: 'PwC Mining 2025 / BoZ' },
+  'cobalt':           { date: '2025-12-01', src: 'PwC Zambia Mining Report 2025' },
+  'nickel':           { date: '2025-12-01', src: 'PwC Zambia Mining Report 2025' },
+  'gold':             { date: '2025-12-01', src: 'PwC Zambia Mining Report 2025' },
+  'emeralds':         { date: '2025-12-01', src: 'PwC Zambia Mining Report 2025' },
+  'reserves':         { date: '2025-05-01', src: 'PBO Budget Brief / BoZ Q1 2025' },
+  'zmw-history':      { date: '2025-05-01', src: 'BoZ Daily Rates / MoFNP 2025' },
+  'inflation':        { date: '2025-06-01', src: 'ZamStats / MoFNP Econ Dev 2025' },
+  'cpi-score':        { date: '2025-01-28', src: 'Transparency International 2024' },
+  'mo-ibrahim':       { date: '2023-10-01', src: 'Mo Ibrahim Foundation IIAG 2023' },
+  'press-freedom':    { date: '2024-05-03', src: 'Reporters Without Borders 2024' },
+  'democracy-index':  { date: '2024-02-15', src: 'EIU Democracy Index 2023' },
+  'rule-of-law':      { date: '2023-10-25', src: 'World Justice Project 2023' },
+  'hdi':              { date: '2024-03-13', src: 'UNDP Human Development Report 2023/24' },
+  'energy-access':    { date: '2024-11-01', src: 'MoE / ZamStats NEAS 2023' },
+  'budget-2024':      { date: '2025-05-01', src: 'Parliamentary Budget Office May 2025' },
+  'debt-restruct':    { date: '2026-06-26', src: 'AfDB / MoFNP June 2026' },
+  'maize':            { date: '2026-05-01', src: 'Ministry of Agriculture May 2026' },
+  'poverty-rate':     { date: '2025-06-01', src: 'UNICEF 2026 Social Sector Budget Analysis' },
+  'birth-reg':        { date: '2024-01-01', src: 'UNICEF Zambia 2024' },
+  'fuel-prices':      { date: '2026-06-28', src: 'Energy Regulation Board' },
+  'zesco-status':     { date: '2025-06-01', src: 'ZESCO / Diggers News May 2025' },
+  'mining-fdi':       { date: '2025-12-01', src: 'ZDA Annual Report / PwC 2025' },
+  'mineral-exports':  { date: '2025-12-01', src: 'MoFNP Annual Economic Report 2024' },
+  'social-budget':    { date: '2026-06-01', src: 'UNICEF 2026 Social Sector Budget Analysis' },
+};
 
 // ── Sentiment word lists ──────────────────────
 const POS_WORDS = [
@@ -529,9 +562,10 @@ function drawCPIChart() {
 //  5. FUEL PRICES  (ERB — via CORS proxy)
 // ══════════════════════════════════════════════
 
-// Known fallback prices (ZMW/litre) — ERB quarterly adjustments
-// Updated from ERB announcements; live fetch attempted first
-const FUEL_FALLBACK = { petrol: 32.46, diesel: 29.84, kerosene: 18.50 };
+// ERB pump prices — fallback when live ERB fetch fails
+// ⚠️  Update these from erb.org.zm after each quarterly ERB price adjustment
+// Last known adjustment: see CurrentFuelPumpPrices.pdf (ERB, June 2026)
+const FUEL_FALLBACK = { petrol: null, diesel: null, kerosene: null };
 
 async function loadFuelPrices() {
   try {
@@ -562,12 +596,11 @@ async function loadFuelPrices() {
 }
 
 function renderFuelCards(petrol, diesel, kerosene, isLive) {
-  const note = isLive ? 'ZMW/litre · ERB (live)' : 'ZMW/litre · ERB (latest known)';
-  const cls  = 'neutral'; // fuel prices are neither good nor bad inherently
+  const note = isLive ? 'ZMW / litre · ERB (live)' : 'ZMW / litre · check erb.org.zm';
 
-  setCard('fuel-petrol-card',   `K ${fmt.num(petrol,   2)}`, note, cls);
-  setCard('fuel-diesel-card',   `K ${fmt.num(diesel,   2)}`, note, cls);
-  setCard('fuel-kerosene-card', `K ${fmt.num(kerosene, 2)}`, note, cls);
+  setCard('fuel-petrol-card',   petrol   ? `K ${fmt.num(petrol,   2)}` : 'See ERB', note, 'neutral');
+  setCard('fuel-diesel-card',   diesel   ? `K ${fmt.num(diesel,   2)}` : 'See ERB', note, 'neutral');
+  setCard('fuel-kerosene-card', kerosene ? `K ${fmt.num(kerosene, 2)}` : 'See ERB', note, 'neutral');
 }
 
 // ══════════════════════════════════════════════
@@ -649,12 +682,17 @@ function drawMaizeChart() {
 //  7. NEWS RSS FEEDS
 // ══════════════════════════════════════════════
 const RSS_FEEDS = [
-  { url: 'https://www.daily-mail.co.zm/feed/',          source: 'Daily Mail',    type: 'local' },
-  { url: 'https://diggers.news/feed/',                  source: 'Diggers',       type: 'local' },
-  { url: 'https://dailynationzambia.com/feed/',         source: 'Daily Nation',  type: 'local' },
-  { url: 'https://makanday.org/feed/',                  source: 'Makanday',      type: 'local' },
-  { url: 'https://feeds.bbci.co.uk/news/world/africa/rss.xml',   source: 'BBC Africa',    type: 'international', filterZambia: true },
-  { url: 'https://feeds.reuters.com/reuters/africaNews',          source: 'Reuters Africa', type: 'international', filterZambia: true },
+  // ── Local Zambian media ──
+  { url: 'https://www.daily-mail.co.zm/feed/',       source: 'Daily Mail',    type: 'local' },
+  { url: 'https://diggers.news/feed/',               source: 'Diggers',       type: 'local' },
+  { url: 'https://dailynationzambia.com/feed/',      source: 'Daily Nation',  type: 'local' },
+  { url: 'https://makanday.org/feed/',               source: 'Makanday',      type: 'local' },
+  { url: 'https://www.lusakatimes.com/feed/',        source: 'Lusaka Times',  type: 'local' },
+  { url: 'https://znbc.co.zm/feed/',                 source: 'ZNBC',          type: 'local' },
+  { url: 'https://times.co.zm/feed/',                source: 'Times of Zambia', type: 'local' },
+  // ── International, filtered for Zambia ──
+  { url: 'https://feeds.bbci.co.uk/news/world/africa/rss.xml', source: 'BBC Africa',     type: 'international', filterZambia: true },
+  { url: 'https://feeds.reuters.com/reuters/africaNews',        source: 'Reuters Africa', type: 'international', filterZambia: true },
 ];
 
 let allNewsItems = [];
@@ -804,11 +842,28 @@ function setYear() {
 }
 
 // ══════════════════════════════════════════════
+//  8. VERIFIED BADGES
+// ══════════════════════════════════════════════
+function renderVerifiedBadges() {
+  document.querySelectorAll('[data-verified]').forEach(el => {
+    const key  = el.dataset.verified;
+    const info = VERIFIED[key];
+    if (!info) return;
+    const badge = document.createElement('span');
+    badge.className = 'verified-badge';
+    badge.title = `Source: ${info.src}`;
+    badge.textContent = `✓ ${info.date}`;
+    el.appendChild(badge);
+  });
+}
+
+// ══════════════════════════════════════════════
 //  MAIN: load all data
 // ══════════════════════════════════════════════
 async function init() {
   setYear();
   colourScoreRings();
+  renderVerifiedBadges();
   drawCPIChart();
   drawCopperProductionChart();
   drawMaizeChart();
