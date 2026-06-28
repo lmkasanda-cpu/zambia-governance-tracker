@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zambia Governance Tracker</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="flag-strip">
+        <span class="g"></span><span class="r"></span><span class="b"></span><span class="o"></span>
+      </div>
+      <div class="brand-text">
+        <h1>Zambia <span>Governance</span> Tracker</h1>
+        <p class="tagline">ECONOMIC · GOVERNANCE · SOCIAL · LIVE DATA</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span id="last-updated">Loading…</span>
+      <button id="refresh-btn" onclick="window.ZGT.refresh()">&#8635; Refresh</button>
+    </div>
+  </div>
+</header>
+
+<!-- TICKER: live exchange rates + key numbers -->
+<div class="ticker-bar">
+  <div class="ticker-inner" id="ticker">
+    <span class="tick-item">Loading live data…</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- ── SECTION 1: ECONOMIC INDICATORS ── -->
+  <section class="section-block">
+    <h2 class="section-title">&#128200; Economic Indicators</h2>
+
+    <!-- Exchange rates -->
+    <div class="subsection">
+      <h3 class="sub-title">Exchange Rates <span class="live-badge">LIVE</span></h3>
+      <div class="card-row" id="exchange-cards">
+        <div class="kpi-card skeleton" id="fx-usd"><span class="kpi-label">ZMW / USD</span><span class="kpi-value">—</span><span class="kpi-sub"></span></div>
+        <div class="kpi-card skeleton" id="fx-gbp"><span class="kpi-label">ZMW / GBP</span><span class="kpi-value">—</span><span class="kpi-sub"></span></div>
+        <div class="kpi-card skeleton" id="fx-eur"><span class="kpi-label">ZMW / EUR</span><span class="kpi-value">—</span><span class="kpi-sub"></span></div>
+        <div class="kpi-card skeleton" id="fx-zar"><span class="kpi-label">ZMW / ZAR</span><span class="kpi-value">—</span><span class="kpi-sub"></span></div>
+      </div>
+    </div>
+
+    <!-- Copper + macro -->
+    <div class="subsection">
+      <h3 class="sub-title">Macro &amp; Commodities</h3>
+      <div class="card-row">
+        <div class="kpi-card skeleton" id="copper-card">
+          <span class="kpi-label">Copper Price</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">USD / tonne (LME)</span>
+        </div>
+        <div class="kpi-card skeleton" id="inflation-card">
+          <span class="kpi-label">Inflation Rate</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">Annual % (World Bank)</span>
+        </div>
+        <div class="kpi-card skeleton" id="gdp-growth-card">
+          <span class="kpi-label">GDP Growth</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">Annual % (World Bank)</span>
+        </div>
+        <div class="kpi-card skeleton" id="gdp-pc-card">
+          <span class="kpi-label">GDP per Capita</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">USD (World Bank)</span>
+        </div>
+        <div class="kpi-card skeleton" id="reserves-card">
+          <span class="kpi-label">Foreign Reserves</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">USD total · World Bank</span>
+        </div>
+        <div class="kpi-card skeleton" id="zmw-yoy-card">
+          <span class="kpi-label">ZMW/USD — YoY change</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">Annual avg change (World Bank)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inflation trend chart -->
+    <div class="chart-card">
+      <h3 class="sub-title">Inflation Trend — Annual Average %</h3>
+      <div class="chart-wrap"><canvas id="inflation-chart"></canvas></div>
+      <p class="chart-note">2024 avg: 15.0% · End-2024: 16.5% · June 2025: 14.1% (declining) · Target band: 6–8% · Source: ZamStats / PBO</p>
+    </div>
+
+    <!-- ZMW/USD history chart -->
+    <div class="chart-card">
+      <h3 class="sub-title">ZMW / USD — Annual Average Exchange Rate <span style="color:var(--green-lt); font-size:0.7rem; font-weight:400; margin-left:0.5rem;">&#x1F7E2; Kwacha up ~19% in 2025</span></h3>
+      <div class="chart-wrap"><canvas id="zmw-chart"></canvas></div>
+      <p class="chart-note">Source: Bank of Zambia (DAILY_RATES_20) · MoFNP Annual Economic Report · PBO Budget Brief May 2025 · Higher value = weaker kwacha</p>
+    </div>
+
+    <!-- Debt & Fiscal -->
+    <div class="subsection">
+      <h3 class="sub-title">Debt &amp; Fiscal</h3>
+      <div class="card-row">
+        <div class="kpi-card skeleton" id="debt-gdp-card">
+          <span class="kpi-label">Debt / GDP</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">% (World Bank)</span>
+        </div>
+        <div class="kpi-card skeleton" id="ca-card">
+          <span class="kpi-label">Current Account</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">% of GDP</span>
+        </div>
+        <div class="kpi-card info-card" id="imf-card">
+          <span class="kpi-label">IMF Programme</span>
+          <span class="kpi-value" style="font-size:1rem;">ECF · Active</span>
+          <a class="kpi-link" href="https://www.imf.org/en/publications/cr/issues/2026/01/31/zambia-sixth-review-under-the-extended-credit-facility-arrangement-request-for-a-waiver-of-573534" target="_blank">6th Review Report ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Bank of Zambia</span>
+          <span class="kpi-value" style="font-size:1rem;">BoZ</span>
+          <a class="kpi-link" href="https://www.boz.zm/home" target="_blank">Rates &amp; Reserves ↗</a>
+        </div>
+      </div>
+
+      <!-- 2024 Budget Performance — from PBO Budget Brief, May 2025 -->
+      <div class="data-banner">
+        <span class="data-banner-label">2024 BUDGET PERFORMANCE</span>
+        <span class="data-banner-src">Source: Parliamentary Budget Office, May 2025 · MoFNP Annual Economic Report 2024</span>
+      </div>
+      <div class="card-row" style="margin-top:0.5rem">
+        <div class="kpi-card up">
+          <span class="kpi-label">Total Revenue &amp; Grants 2024</span>
+          <span class="kpi-value">K152.6B</span>
+          <span class="kpi-sub">+5.6% above target of K144.5B · +25% vs 2023</span>
+        </div>
+        <div class="kpi-card up">
+          <span class="kpi-label">Domestic Revenue / GDP</span>
+          <span class="kpi-value">23.4%</span>
+          <span class="kpi-sub">Above 22.0% target · PBO 2025</span>
+        </div>
+        <div class="kpi-card up">
+          <span class="kpi-label">Fiscal Deficit 2024</span>
+          <span class="kpi-value">3.5%</span>
+          <span class="kpi-sub">of GDP · Down from 6.7% in 2023 · Target ≤4.8%</span>
+        </div>
+        <div class="kpi-card neutral">
+          <span class="kpi-label">Total Expenditure 2024</span>
+          <span class="kpi-value">K197.8B</span>
+          <span class="kpi-sub">vs K177.9B budget (+11.2%) · Drought supplementaries</span>
+        </div>
+        <div class="kpi-card down">
+          <span class="kpi-label">Total Govt Debt (end-2024)</span>
+          <span class="kpi-value">$25.0B</span>
+          <span class="kpi-sub">Domestic K229B + External $15.4B · PBO/MoFNP</span>
+        </div>
+        <div class="kpi-card up">
+          <span class="kpi-label">Debt Restructuring (AIP)</span>
+          <span class="kpi-value">92.2%</span>
+          <span class="kpi-sub">$12.4B in scope · $4.0B in 2024 · $2.7B in 2025</span>
+        </div>
+        <div class="kpi-card up">
+          <span class="kpi-label">Q1 2025 GDP Growth</span>
+          <span class="kpi-value">7.9%</span>
+          <span class="kpi-sub">YoY · Q4 2024: 8.6% · Driven by mining &amp; construction</span>
+        </div>
+        <div class="kpi-card neutral">
+          <span class="kpi-label">Debt Service / Revenue 2025</span>
+          <span class="kpi-value">24.2%</span>
+          <span class="kpi-sub">vs 14% programme target · Fuel arrears impact</span>
+        </div>
+      </div>
+
+      <!-- Government Revenue sub-row -->
+      <div class="card-row" style="margin-top:0.5rem">
+        <div class="kpi-card neutral">
+          <span class="kpi-label">2026 National Budget</span>
+          <span class="kpi-value" style="font-size:1rem;">Balancing Act</span>
+          <span class="kpi-sub">Economic stability vs. social investment</span>
+          <a class="kpi-link" href="https://www.unicef.org/zambia/press-releases/zambias-2026-national-budget-balancing-economic-stability-social-investment" target="_blank">UNICEF Budget Analysis ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">National Budget</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=4995" target="_blank">Budget Documents ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Public Debt Reports</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=3397" target="_blank">Debt Publications ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Economic Reports</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=3226" target="_blank">Economic Outlook ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Fiscal Position</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=7269" target="_blank">Fiscal Updates ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Quarterly Reports</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=8409" target="_blank">Quarterly Economic Reports ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">External Finance</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=3475" target="_blank">Aid &amp; External Finance ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Privatisation</span>
+          <span class="kpi-value" style="font-size:1rem;">MoFNP</span>
+          <a class="kpi-link" href="https://www.mofnp.gov.zm/?page_id=4096" target="_blank">State Assets ↗</a>
+        </div>
+      </div>
+
+      <!-- Eurobond sub-row -->
+      <div class="card-row" style="margin-top:0.5rem">
+        <div class="kpi-card up" style="grid-column: span 2;">
+          <span class="kpi-label">Eurobond Restructuring — Latest (June 2026)</span>
+          <span class="kpi-value" style="font-size:1rem;">AfDB Debt-for-Development Swap</span>
+          <span class="kpi-sub">African Development Bank backs Zambia's landmark swap · $1.36B 2053 Eurobond buyback offer sweetened</span>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.4rem">
+            <a class="kpi-link" href="https://www.topafricanews.com/2026/06/26/african-development-bank-group-backs-zambias-global-landmark-debt-for-development-swap/" target="_blank">AfDB Swap (June 2026) ↗</a>
+            <a class="kpi-link" href="https://www.cnbcafrica.com/2026/zambia-sweetens-buyback-offer-for-1-36-billion-2053-eurobond" target="_blank">2053 Eurobond Buyback ↗</a>
+            <a class="kpi-link" href="https://znbc.co.zm/?p=13357" target="_blank">ZNBC Coverage ↗</a>
+            <a class="kpi-link" href="https://www.mofnp.gov.zm/?p=7893" target="_blank">MoFNP Statement ↗</a>
+          </div>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Restructuring Context</span>
+          <span class="kpi-value" style="font-size:1rem;">G20 Common Framework</span>
+          <span class="kpi-sub">Default 2020 · Deal 2023 · Ongoing buybacks 2026</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copper Sector -->
+    <div class="subsection">
+      <h3 class="sub-title">&#129684; Copper Sector</h3>
+      <div class="card-row">
+        <div class="kpi-card up" id="copper-prod-card">
+          <span class="kpi-label">Production 2024</span>
+          <span class="kpi-value">820,676 <small style="font-size:0.75rem">mt</small></span>
+          <span class="kpi-sub">+11.4% vs 2023 (736,747 mt) · MoFNP/PBO 2025</span>
+          <a class="kpi-link" href="https://www.mmmd.gov.zm/?p=3792" target="_blank">Ministry of Mines ↗</a>
+        </div>
+        <div class="kpi-card up">
+          <span class="kpi-label">Q1 2025 Production</span>
+          <span class="kpi-value">224,104 <small style="font-size:0.75rem">mt</small></span>
+          <span class="kpi-sub">+29.9% vs Q1 2024 (172,549 mt) · PBO Brief 2025</span>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">2031 National Target</span>
+          <span class="kpi-value">3M <small style="font-size:0.9rem">t</small></span>
+          <span class="kpi-sub">Tonnes per year · Vision 2031</span>
+          <a class="kpi-link" href="https://www.pdu.gov.zm/blog/zambias-mining-sector-charts-its-course-to-2031" target="_blank">PDU Mining Roadmap ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Workforce Gap Analysis</span>
+          <span class="kpi-value" style="font-size:1rem;">World Bank 2025</span>
+          <span class="kpi-sub">Skills needed to reach copper ambitions</span>
+          <a class="kpi-link" href="https://www.worldbank.org/en/news/feature/2025/09/10/zambia-s-copper-opportunity-can-the-workforce-keep-up" target="_blank">Read Report ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Annual Mining Report</span>
+          <span class="kpi-value" style="font-size:1rem;">PwC Zambia</span>
+          <span class="kpi-sub">Production, revenue &amp; investment data</span>
+          <a class="kpi-link" href="https://www.pwc.com/zm/en/publications/zambia-mining-report.html" target="_blank">PwC Mining Report ↗</a>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3 class="sub-title">Copper Production Trend (tonnes)</h3>
+        <div class="chart-wrap"><canvas id="copper-prod-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Energy & Infrastructure -->
+    <div class="subsection">
+      <h3 class="sub-title">&#9889; Energy &amp; Infrastructure</h3>
+      <div class="card-row">
+        <div class="kpi-card up" id="zesco-status-card">
+          <span class="kpi-label">ZESCO Load-Shedding</span>
+          <span class="kpi-value" style="font-size:1.1rem; color: var(--green-lt);">Stabilised</span>
+          <span class="kpi-sub">As of mid-2025 · Kariba reservoir recovering</span>
+          <a class="kpi-link" href="https://www.zesco.co.zm/media_releases" target="_blank">ZESCO Media Releases ↗</a>
+        </div>
+        <div class="kpi-card neutral">
+          <span class="kpi-label">Historical Context</span>
+          <span class="kpi-value" style="font-size:1rem; color: var(--amber-lt);">16–18 hrs/day</span>
+          <span class="kpi-sub">Peak load-shedding 2024–early 2025 due to low Kariba levels</span>
+          <a class="kpi-link" href="https://diggers.news/local/2025/05/22/zesco-introduces-load-shedding-stages/" target="_blank">Diggers: ZESCO stages ↗</a>
+        </div>
+        <div class="kpi-card skeleton" id="fuel-petrol-card">
+          <span class="kpi-label">Petrol Price</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">ZMW / litre · ERB</span>
+        </div>
+        <div class="kpi-card skeleton" id="fuel-diesel-card">
+          <span class="kpi-label">Diesel Price</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">ZMW / litre · ERB</span>
+        </div>
+        <div class="kpi-card skeleton" id="fuel-kerosene-card">
+          <span class="kpi-label">Kerosene (LPFO)</span>
+          <span class="kpi-value">—</span>
+          <span class="kpi-sub">ZMW / litre · ERB</span>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">ZESCO Electricity Tariff</span>
+          <span class="kpi-value" style="font-size:1rem;">Current Schedule</span>
+          <a class="kpi-link" href="https://www.zesco.co.zm/tariff" target="_blank">ZESCO Tariffs ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Energy Regulation Board</span>
+          <span class="kpi-value" style="font-size:1rem;">ERB</span>
+          <span class="kpi-sub">Fuel price announcements &amp; regulatory decisions</span>
+          <a class="kpi-link" href="https://www.erb.org.zm/" target="_blank">erb.org.zm ↗</a>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">Energy Market Overview</span>
+          <span class="kpi-value" style="font-size:1rem;">Climatescope</span>
+          <span class="kpi-sub">Renewable energy &amp; clean power investment data</span>
+          <a class="kpi-link" href="https://www.global-climatescope.org/markets/zambia" target="_blank">Climatescope Zambia ↗</a>
+        </div>
+      </div>
+
+      <!-- NEAS 2023 — Energy Access -->
+      <div class="data-banner">
+        <span class="data-banner-label">NATIONAL ENERGY ACCESS SURVEY 2023</span>
+        <span class="data-banner-src">Source: Ministry of Energy / ZamStats / REA · Published November 2024 · n = 20.8M population</span>
+      </div>
+      <div class="card-row">
+        <div class="kpi-card neutral">
+          <span class="kpi-label">National Electricity Access</span>
+          <span class="kpi-value">53.6%</span>
+          <span class="kpi-sub">of households · NEAS 2023 (MTF definition)</span>
+        </div>
+        <div class="kpi-card up">
+          <span class="kpi-label">Urban Electricity Access</span>
+          <span class="kpi-value">80.3%</span>
+          <span class="kpi-sub">of urban households · Lusaka: 84.8%</span>
+        </div>
+        <div class="kpi-card down">
+          <span class="kpi-label">Rural Electricity Access</span>
+          <span class="kpi-value">34.0%</span>
+          <span class="kpi-sub">of rural households · Western: 24.8% (lowest)</span>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">SDG 7 Target</span>
+          <span class="kpi-value" style="font-size:1rem;">100% by 2030</span>
+          <span class="kpi-sub">Universal access goal · 95% unconnected HH want connection</span>
+        </div>
+        <div class="kpi-card down">
+          <span class="kpi-label">Cooking Fuel</span>
+          <span class="kpi-value">57.6%</span>
+          <span class="kpi-sub">use charcoal · 48% use three-stone open fire</span>
+        </div>
+        <div class="kpi-card neutral">
+          <span class="kpi-label">Power Generation Mix</span>
+          <span class="kpi-value">&gt;80%</span>
+          <span class="kpi-sub">Hydropower · Vulnerability to drought-driven power cuts</span>
+        </div>
+        <div class="kpi-card neutral">
+          <span class="kpi-label">Solar Adoption</span>
+          <span class="kpi-value">18.6%</span>
+          <span class="kpi-sub">use solar home system · 4.2% use solar lantern</span>
+        </div>
+        <div class="kpi-card info-card">
+          <span class="kpi-label">NEAS Full Report</span>
+          <span class="kpi-value" style="font-size:1rem;">MoE / ZamStats</span>
+          <span class="kpi-sub">2023 National Energy Access Survey</span>
+          <a class="kpi-link" href="https://www.zamstats.gov.zm/" target="_blank">zamstats.gov.zm ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION: AGRICULTURE & FOOD SECURITY ── -->
+  <section class="section-block">
+    <h2 class="section-title">&#127807; Agriculture &amp; Food Security</h2>
+
+    <div class="card-row">
+      <div class="kpi-card up" style="grid-column: span 2;">
+        <span class="kpi-label">2025/26 Maize Projection</span>
+        <span class="kpi-value" style="color: var(--green-lt);">~5M <small style="font-size:1rem; font-weight:400">mt</small></span>
+        <span class="kpi-sub">Nearly 5 million metric tonnes · Near-record crop · Ministry of Agriculture, May 2026</span>
+        <a class="kpi-link" href="https://www.agriculture.gov.zm/2026/05/zambia-projected-to-produce-nearly-5-million-metric-tonnes-of-maize/" target="_blank">Ministry of Agriculture announcement ↗</a>
+      </div>
+      <div class="kpi-card neutral">
+        <span class="kpi-label">2023/24 Maize Output</span>
+        <span class="kpi-value" style="color: var(--red-lt);">1.95M <small style="font-size:0.9rem">mt</small></span>
+        <span class="kpi-sub">El Niño drought year · Severe food security impact</span>
+      </div>
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Food Security Hotspots</span>
+        <span class="kpi-value" style="font-size:1rem;">EU JRC Analysis</span>
+        <span class="kpi-sub">Production monitoring &amp; vulnerability mapping</span>
+        <a class="kpi-link" href="https://agricultural-production-hotspots.ec.europa.eu/countryAllAssessments.php?cntry=270" target="_blank">EU Hotspots: Zambia ↗</a>
+      </div>
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Commercial Agriculture</span>
+        <span class="kpi-value" style="font-size:1rem;">US Trade Guide</span>
+        <span class="kpi-sub">Sector overview, investment &amp; trade opportunities</span>
+        <a class="kpi-link" href="https://www.trade.gov/country-commercial-guides/zambia-agriculture" target="_blank">trade.gov Zambia Agri ↗</a>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="sub-title">Maize Production History (metric tonnes)</h3>
+      <div class="chart-wrap"><canvas id="maize-chart"></canvas></div>
+    </div>
+
+    <div class="card-row">
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Ministry of Agriculture</span>
+        <span class="kpi-value" style="font-size:1rem;">MoAL</span>
+        <span class="kpi-sub">Crop forecasts, policy &amp; food security</span>
+        <a class="kpi-link" href="https://www.agriculture.gov.zm/" target="_blank">agriculture.gov.zm ↗</a>
+      </div>
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Strategic Food Reserve</span>
+        <span class="kpi-value" style="font-size:1rem;">FRA / SFR</span>
+        <span class="kpi-sub">Maize stocks &amp; food security buffer</span>
+        <a class="kpi-link" href="https://www.agriculture.gov.zm/" target="_blank">agriculture.gov.zm ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 2: GOVERNANCE INDICES ── -->
+  <section class="section-block">
+    <h2 class="section-title">&#9878;&#65039; Governance Indices <span class="data-note">(Annual — updated when new editions released)</span></h2>
+    <div class="card-row" id="governance-cards">
+
+      <div class="kpi-card gov-card">
+        <span class="kpi-label">Corruption Perceptions Index</span>
+        <span class="kpi-value"><span class="score-ring" data-score="33" data-max="100">33<small>/100</small></span></span>
+        <span class="kpi-sub">Rank 116/180 · TI 2024</span>
+        <a class="kpi-link" href="https://www.transparency.org/en/countries/zambia" target="_blank">Transparency International ↗</a>
+      </div>
+
+      <div class="kpi-card gov-card">
+        <span class="kpi-label">Mo Ibrahim Governance Index</span>
+        <span class="kpi-value"><span class="score-ring" data-score="48" data-max="100">48.4<small>/100</small></span></span>
+        <span class="kpi-sub">Rank 17/54 (Africa) · 2023</span>
+        <a class="kpi-link" href="https://mo.ibrahim.foundation/iiag" target="_blank">IIAG ↗</a>
+      </div>
+
+      <div class="kpi-card gov-card">
+        <span class="kpi-label">Press Freedom Index</span>
+        <span class="kpi-value"><span class="score-ring" data-score="55" data-max="100">55.4<small>/100</small></span></span>
+        <span class="kpi-sub">Rank 96/180 · RSF 2024</span>
+        <a class="kpi-link" href="https://rsf.org/en/country/zambia" target="_blank">RSF ↗</a>
+      </div>
+
+      <div class="kpi-card gov-card">
+        <span class="kpi-label">Democracy Index</span>
+        <span class="kpi-value"><span class="score-ring" data-score="50" data-max="100">4.98<small>/10</small></span></span>
+        <span class="kpi-sub">Hybrid Regime · EIU 2023</span>
+        <a class="kpi-link" href="https://www.eiu.com/n/campaigns/democracy-index-2023/" target="_blank">EIU ↗</a>
+      </div>
+
+      <div class="kpi-card gov-card">
+        <span class="kpi-label">Rule of Law Index</span>
+        <span class="kpi-value"><span class="score-ring" data-score="45" data-max="100">0.45<small>/1.0</small></span></span>
+        <span class="kpi-sub">Rank 87/142 · WJP 2023</span>
+        <a class="kpi-link" href="https://worldjusticeproject.org/rule-of-law-index/country/2023/Zambia/" target="_blank">WJP ↗</a>
+      </div>
+
+      <div class="kpi-card gov-card">
+        <span class="kpi-label">Human Development Index</span>
+        <span class="kpi-value"><span class="score-ring" data-score="56" data-max="100">0.565<small>/1.0</small></span></span>
+        <span class="kpi-sub">Rank 156/193 · UNDP 2023</span>
+        <a class="kpi-link" href="https://hdr.undp.org/data-center/specific-country-data#/countries/ZMB" target="_blank">UNDP ↗</a>
+      </div>
+
+    </div>
+
+    <!-- Governance chart -->
+    <div class="chart-card">
+      <h3 class="sub-title">CPI Score History (Zambia)</h3>
+      <div class="chart-wrap"><canvas id="cpi-chart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 3: DEMOGRAPHICS & SOCIAL ── -->
+  <section class="section-block">
+    <h2 class="section-title">&#128101; Demographics &amp; Social</h2>
+    <div class="card-row">
+      <div class="kpi-card skeleton" id="pop-card">
+        <span class="kpi-label">Population</span>
+        <span class="kpi-value">—</span>
+        <span class="kpi-sub">World Bank</span>
+      </div>
+      <div class="kpi-card skeleton" id="poverty-card">
+        <span class="kpi-label">Poverty Rate</span>
+        <span class="kpi-value">—</span>
+        <span class="kpi-sub">at $2.15/day (World Bank)</span>
+      </div>
+      <div class="kpi-card skeleton" id="life-card">
+        <span class="kpi-label">Life Expectancy</span>
+        <span class="kpi-value">—</span>
+        <span class="kpi-sub">Years (World Bank)</span>
+      </div>
+      <div class="kpi-card skeleton" id="unemp-card">
+        <span class="kpi-label">Unemployment</span>
+        <span class="kpi-value">—</span>
+        <span class="kpi-sub">% (World Bank)</span>
+      </div>
+    </div>
+    <div class="card-row" style="margin-top:0.5rem">
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Official Statistics</span>
+        <span class="kpi-value" style="font-size:1rem;">ZamStats</span>
+        <a class="kpi-link" href="https://www.zamstats.gov.zm/" target="_blank">zamstats.gov.zm ↗</a>
+      </div>
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Constitution</span>
+        <span class="kpi-value" style="font-size:1rem;">2016 (amended)</span>
+        <a class="kpi-link" href="https://www.constituteproject.org/constitution/Zambia_2016" target="_blank">Read Constitution ↗</a>
+      </div>
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Legal Database</span>
+        <span class="kpi-value" style="font-size:1rem;">ZambiaLII</span>
+        <a class="kpi-link" href="https://zambialii.org/" target="_blank">zambialii.org ↗</a>
+      </div>
+      <div class="kpi-card info-card">
+        <span class="kpi-label">Parliament</span>
+        <span class="kpi-value" style="font-size:1rem;">National Assembly</span>
+        <a class="kpi-link" href="https://www.parliament.gov.zm/" target="_blank">parliament.gov.zm ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 4: NEWS ── -->
+  <section class="section-block">
+    <h2 class="section-title">&#128240; News &amp; Media</h2>
+
+    <div class="news-controls">
+      <div class="tab-group" id="news-tabs">
+        <button class="tab-btn active" data-filter="all">All</button>
+        <button class="tab-btn" data-filter="local">Local</button>
+        <button class="tab-btn" data-filter="international">International</button>
+        <button class="tab-btn sentiment-pos" data-filter="positive">&#x1F7E2; Positive</button>
+        <button class="tab-btn sentiment-neg" data-filter="negative">&#x1F534; Negative</button>
+      </div>
+      <span id="news-count" class="news-count"></span>
+    </div>
+
+    <div id="news-grid" class="news-grid">
+      <div class="news-skeleton">Loading news feeds…</div>
+    </div>
+
+    <div class="sources-list">
+      <strong>Sources:</strong>
+      <a href="https://www.daily-mail.co.zm/" target="_blank">Daily Mail</a>
+      <a href="https://diggers.news/" target="_blank">Diggers News</a>
+      <a href="https://dailynationzambia.com/" target="_blank">Daily Nation</a>
+      <a href="https://makanday.org/" target="_blank">Makanday</a>
+      <a href="https://feeds.bbci.co.uk/news/world/africa/rss.xml" target="_blank">BBC Africa</a>
+      <a href="https://feeds.reuters.com/reuters/africaNews" target="_blank">Reuters Africa</a>
+    </div>
+  </section>
+
+  <!-- ── SECTION 5: INSTITUTIONS ── -->
+  <section class="section-block">
+    <h2 class="section-title">&#127963; Key Institutions</h2>
+    <div class="institutions-grid">
+      <a class="inst-card" href="https://www.cabinet.gov.zm/" target="_blank">
+        <span class="inst-icon">&#127963;</span>
+        <span class="inst-name">Cabinet Office</span>
+        <span class="inst-desc">Executive decisions &amp; cabinet meetings</span>
+      </a>
+      <a class="inst-card" href="https://www.parliament.gov.zm/" target="_blank">
+        <span class="inst-icon">&#127963;</span>
+        <span class="inst-name">National Assembly</span>
+        <span class="inst-desc">Legislation, bills &amp; Hansard</span>
+      </a>
+      <a class="inst-card" href="https://www.mofnp.gov.zm/" target="_blank">
+        <span class="inst-icon">&#128176;</span>
+        <span class="inst-name">Ministry of Finance</span>
+        <span class="inst-desc">Budget, fiscal policy &amp; economic data</span>
+      </a>
+      <a class="inst-card" href="https://www.zamstats.gov.zm/" target="_blank">
+        <span class="inst-icon">&#128202;</span>
+        <span class="inst-name">ZamStats</span>
+        <span class="inst-desc">Official national statistics</span>
+      </a>
+      <a class="inst-card" href="https://www.agriculture.gov.zm/" target="_blank">
+        <span class="inst-icon">&#127807;</span>
+        <span class="inst-name">Ministry of Agriculture</span>
+        <span class="inst-desc">Food security &amp; agricultural policy</span>
+      </a>
+      <a class="inst-card" href="https://www.mgee.gov.zm/" target="_blank">
+        <span class="inst-icon">&#127758;</span>
+        <span class="inst-name">Ministry of Green Economy</span>
+        <span class="inst-desc">Environment &amp; energy policy</span>
+      </a>
+      <a class="inst-card" href="https://zambialii.org/" target="_blank">
+        <span class="inst-icon">&#9878;&#65039;</span>
+        <span class="inst-name">ZambiaLII</span>
+        <span class="inst-desc">Legal information &amp; case law</span>
+      </a>
+      <a class="inst-card" href="https://makanday.org/" target="_blank">
+        <span class="inst-icon">&#128269;</span>
+        <span class="inst-name">Makanday</span>
+        <span class="inst-desc">Investigative journalism &amp; accountability</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p>Data sources: World Bank Open Data · IMF · Transparency International · RSF · EIU · WJP · UNDP · Mo Ibrahim Foundation · Open Exchange Rates · Local &amp; International RSS Feeds</p>
+    <p>This tracker aggregates public data for civic information purposes. For official figures always consult primary sources.</p>
+    <p class="footer-brand">Zambia Governance Tracker &copy; <span id="year"></span></p>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>

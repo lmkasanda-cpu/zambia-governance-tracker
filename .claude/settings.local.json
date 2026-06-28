@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"/Users/lombemichaelkasanda/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/ca8843cd-2de5-4856-8479-2aacacf96e56/3bac6338-e8db-4a5d-bf82-f510e8620da1/skills/canvas-design/canvas-fonts/\" 2>/dev/null | head -30)",
+      "Bash(python3 -c \"import matplotlib; import numpy; print\\('OK'\\)\")",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL OK'\\)\")",
+      "Bash(pip3 install *)",
+      "Bash(python3 /tmp/copper_meridian_canvas.py)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npx --yes serve --version)",
+      "Bash(python3 -)",
+      "Bash(brew install *)",
+      "Bash(pdftotext \"/Users/lombemichaelkasanda/Downloads/2025 BUDGET SPEECH FINAL_240927_164702.pdf\" -)",
+      "Bash(brew list *)",
+      "Bash(pdftotext --version)",
+      "Bash(python3 -c ' *)",
+      "Bash(pdftotext /Users/lombemichaelkasanda/Downloads/CurrentFuelPumpPrices.pdf -)",
+      "Bash(gh --version)",
+      "Bash(git --version)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
