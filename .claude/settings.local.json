@@ -23,7 +23,9 @@
       "Bash(/opt/homebrew/bin/pdftotext /Users/lombemichaelkasanda/Downloads/CurrentFuelPumpPrices.pdf -)",
       "Bash(/usr/local/bin/pdftotext /Users/lombemichaelkasanda/Downloads/CurrentFuelPumpPrices.pdf -)",
       "Bash(git remote *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git -C /Users/lombemichaelkasanda/Documents/Website_Gov add -A)",
+      "Bash(git -C /Users/lombemichaelkasanda/Documents/Website_Gov commit -m \"Remove pages.yml — using GitHub static.yml workflow instead\")"
     ]
   }
 }
