@@ -433,7 +433,7 @@ function drawZMWChart() {
     { year: '2022', val: 16.88 },  // partial recovery
     { year: '2023', val: 20.23 },  // PBO Budget Brief: K20.23 avg
     { year: '2024', val: 26.19 },  // PBO Budget Brief: K26.19 avg (–29.4% depreciation)
-    { year: '2025*', val: null },   // recovering — kwacha up ~19% in 2025 (mid-year)
+    { year: '2026*', val: 18.56 }, // ERB pricing window rate, May/Jun 2026 — strong appreciation
   ];
 
   const plotData = data.filter(d => d.val !== null);
@@ -475,10 +475,11 @@ function drawZMWChart() {
             label: ctx => `K ${Number(ctx.raw).toFixed(2)} per USD`,
             afterLabel: ctx => {
               const notes = {
-                '2015': 'Copper price crash',
+                '2015': 'Copper price crash & fiscal pressures',
                 '2020': 'COVID-19 + Eurobond default',
-                '2023': 'Drought pressure',
-                '2024': '–29.4% depreciation (drought, imports)',
+                '2023': 'Drought pressure begins',
+                '2024': '–29.4% depreciation (drought, food/electricity imports)',
+                '2026*': 'ERB pricing window rate (May/Jun 2026) — sharp appreciation',
               };
               return notes[ctx.label] || '';
             }
@@ -562,10 +563,11 @@ function drawCPIChart() {
 //  5. FUEL PRICES  (ERB — via CORS proxy)
 // ══════════════════════════════════════════════
 
-// ERB pump prices — fallback when live ERB fetch fails
-// ⚠️  Update these from erb.org.zm after each quarterly ERB price adjustment
-// Last known adjustment: see CurrentFuelPumpPrices.pdf (ERB, June 2026)
-const FUEL_FALLBACK = { petrol: null, diesel: null, kerosene: null };
+// ERB pump prices — June 2026 (ERB Press Release, effective midnight 31 May 2026)
+// Source: Energy Regulation Board — Review of Petroleum Pump Prices June 2026
+// BoZ rate used for this pricing window: K18.56/USD (significant kwacha appreciation)
+const FUEL_FALLBACK = { petrol: 27.15, diesel: 32.11, kerosene: 33.91, jetA1: 36.68 };
+// Note: diesel > petrol in June 2026 due to higher global diesel benchmark prices
 
 async function loadFuelPrices() {
   try {
@@ -590,17 +592,18 @@ async function loadFuelPrices() {
       !!petrol  // true = live, false = fallback
     );
   } catch(e) {
-    console.warn('ERB fuel fetch failed, using latest known prices:', e.message);
+    console.warn('ERB fuel fetch failed, using June 2026 ERB prices:', e.message);
     renderFuelCards(FUEL_FALLBACK.petrol, FUEL_FALLBACK.diesel, FUEL_FALLBACK.kerosene, false);
   }
 }
 
 function renderFuelCards(petrol, diesel, kerosene, isLive) {
-  const note = isLive ? 'ZMW / litre · ERB (live)' : 'ZMW / litre · check erb.org.zm';
+  const src  = isLive ? 'ERB (live)' : 'ERB Jun 2026 · erb.org.zm';
+  const note = `ZMW / litre · ${src}`;
 
-  setCard('fuel-petrol-card',   petrol   ? `K ${fmt.num(petrol,   2)}` : 'See ERB', note, 'neutral');
-  setCard('fuel-diesel-card',   diesel   ? `K ${fmt.num(diesel,   2)}` : 'See ERB', note, 'neutral');
-  setCard('fuel-kerosene-card', kerosene ? `K ${fmt.num(kerosene, 2)}` : 'See ERB', note, 'neutral');
+  setCard('fuel-petrol-card',   `K ${fmt.num(petrol,   2)}`, note, 'neutral');
+  setCard('fuel-diesel-card',   `K ${fmt.num(diesel,   2)}`, note + ' · ↓ from K33.99', 'up');
+  setCard('fuel-kerosene-card', `K ${fmt.num(kerosene, 2)}`, note + ' · ↓ from K35.05', 'up');
 }
 
 // ══════════════════════════════════════════════

@@ -101,7 +101,7 @@
     <div class="chart-card">
       <h3 class="sub-title">ZMW / USD — Annual Average Exchange Rate <span style="color:var(--green-lt); font-size:0.7rem; font-weight:400; margin-left:0.5rem;">&#x1F7E2; Kwacha up ~19% in 2025</span></h3>
       <div class="chart-wrap"><canvas id="zmw-chart"></canvas></div>
-      <p class="chart-note">Source: Bank of Zambia (DAILY_RATES_20) · MoFNP Annual Economic Report · PBO Budget Brief May 2025 · Higher value = weaker kwacha</p>
+      <p class="chart-note">Source: Bank of Zambia daily interbank rates · MoFNP Annual Economic Report · PBO Budget Brief May 2025 · ERB Jun 2026 pricing window · Higher value = weaker kwacha · ⚠️ ERB's official BoZ window rate for June 2026 fuel pricing: <strong>K18.56/USD</strong> — a dramatic appreciation from the 2024 average of K26.19. Live API rates may differ from this official pricing rate.</p>
     </div>
 
     <!-- Debt & Fiscal -->
@@ -406,6 +406,16 @@
           <span class="kpi-label">ZESCO Electricity Tariff</span>
           <span class="kpi-value" style="font-size:1rem;">Current Schedule</span>
           <a class="kpi-link" href="https://www.zesco.co.zm/tariff" target="_blank">ZESCO Tariffs ↗</a>
+        </div>
+        <div class="kpi-card neutral" id="fuel-jet-card" data-verified="fuel-prices">
+          <span class="kpi-label">Jet A-1 Price</span>
+          <span class="kpi-value">K 36.68</span>
+          <span class="kpi-sub">ZMW/litre · ERB Jun 2026 · ↓ from K37.98</span>
+        </div>
+        <div class="kpi-card up" data-verified="fuel-prices">
+          <span class="kpi-label">ERB Pricing Rate (Jun 2026)</span>
+          <span class="kpi-value">K 18.56</span>
+          <span class="kpi-sub">USD used for Jun 2026 fuel pricing · BoZ window rate — kwacha strongly appreciated vs K26.19 avg (2024)</span>
         </div>
         <div class="kpi-card info-card">
           <span class="kpi-label">Energy Regulation Board</span>
