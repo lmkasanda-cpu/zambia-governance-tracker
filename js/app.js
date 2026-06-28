@@ -128,6 +128,13 @@ async function loadExchangeRates() {
 // ══════════════════════════════════════════════
 //  2. COPPER PRICE  (Yahoo Finance via proxy)
 // ══════════════════════════════════════════════
+// Copper price sources (in priority order):
+// 1. Yahoo Finance HG=F (COMEX front-month futures) via AllOrigins proxy
+// 2. Fallback: manual reference to Google Finance HGW00:COMEX
+// Reference: https://www.google.com/finance/beta/quote/HGW00:COMEX
+// HGW00 = COMEX Copper front-month rolling contract (same underlying as HG=F)
+const COPPER_GF_URL = 'https://www.google.com/finance/beta/quote/HGW00:COMEX';
+
 async function loadCopperPrice() {
   try {
     const yahooUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/HG%3DF?interval=1d&range=1d';
@@ -137,19 +144,25 @@ async function loadCopperPrice() {
     const meta   = parsed?.chart?.result?.[0]?.meta;
     if (!meta) throw new Error('No data');
 
-    // HG=F is quoted in USD/lb (cents per lb on COMEX, but Yahoo gives dollars)
-    const priceLb = meta.regularMarketPrice;       // USD per lb
-    const priceTonne = priceLb * 2204.62;          // convert to USD/tonne
+    // HG=F / HGW00 is quoted in USD/lb on COMEX
+    const priceLb    = meta.regularMarketPrice;
+    const priceTonne = priceLb * 2204.62;   // 1 tonne = 2204.62 lbs
 
     setCard('copper-card',
       `$${fmt.num(priceTonne, 0)}`,
-      `USD/tonne · ${fmt.num(priceLb, 4)} USD/lb · ${new Date().toLocaleDateString()}`,
+      `USD/tonne · ${fmt.num(priceLb, 3)} USD/lb · COMEX HGW00 · ${new Date().toLocaleDateString()}`,
       priceLb > 3.5 ? 'up' : 'down'
     );
     return priceTonne;
   } catch(e) {
-    console.warn('Copper price fetch failed:', e);
-    setCard('copper-card', '~$9,500', 'USD/tonne (approx — live data unavailable)', 'neutral');
+    console.warn('Copper price fetch failed — check Google Finance for live price:', e.message);
+    const card = document.getElementById('copper-card');
+    if (card) {
+      card.classList.remove('skeleton');
+      card.querySelector('.kpi-value').innerHTML =
+        `<a href="${COPPER_GF_URL}" target="_blank" style="color:var(--copper-lt);font-size:1rem;">View live price ↗</a>`;
+      card.querySelector('.kpi-sub').textContent = 'COMEX HGW00 · Google Finance';
+    }
   }
 }
 

@@ -4,7 +4,7 @@
 
 > Built for the Zambian public — and the academics, researchers, traders, policy-makers, NGOs, and IGOs who study and serve it.
 
-🌐 **Live site:** [https://[your-username].github.io/zambia-governance-tracker](https://github.com)
+🌐 **Live site:** [https://lmkasanda-cpu.github.io/zambia-governance-tracker](https://lmkasanda-cpu.github.io/zambia-governance-tracker)
 
 ---
 
